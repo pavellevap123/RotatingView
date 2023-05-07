@@ -12,7 +12,6 @@ class ViewController: UIViewController {
     private lazy var containerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .cyan
         return view
     }()
     
@@ -32,13 +31,21 @@ class ViewController: UIViewController {
         return slider
     }()
     
-    var trailingConstraint: NSLayoutConstraint!
+    private var distance: CGFloat = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         layout()
         
         slider.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
+        slider.addTarget(self, action: #selector(sliderReleased), for: .touchUpInside)
+        slider.addTarget(self, action: #selector(sliderReleased), for: .touchUpOutside)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        distance = containerView.bounds.width - ((rotatingView.bounds.width / 2) * 2) + (rotatingView.bounds.width / 2 * 0.5)
+        rotatingView.center = CGPoint(x: rotatingView.bounds.width / 2, y: containerView.bounds.height / 2)
     }
     
     private func layout() {
@@ -54,8 +61,6 @@ class ViewController: UIViewController {
             containerView.heightAnchor.constraint(equalToConstant: 140),
             
             // rotatingView
-            rotatingView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            //rotatingView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             rotatingView.heightAnchor.constraint(equalToConstant: 80),
             rotatingView.widthAnchor.constraint(equalTo: rotatingView.heightAnchor),
             
@@ -65,14 +70,6 @@ class ViewController: UIViewController {
             slider.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 48)
         ])
     }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        distance = containerView.bounds.width - ((rotatingView.bounds.width / 2) * 2) + (rotatingView.bounds.width / 2 * 0.5)
-        rotatingView.center = CGPoint(x: rotatingView.bounds.width / 2, y: containerView.bounds.height / 2)
-    }
-    
-    var distance: CGFloat = 0
     
     @objc func sliderValueChanged(_ sender: UISlider) {
         
@@ -90,6 +87,11 @@ class ViewController: UIViewController {
             
             self.rotatingView.transform = CGAffineTransform(rotationAngle: CGFloat(angle) * CGFloat.pi / 180).concatenating(CGAffineTransform(scaleX: CGFloat(scaleFactor), y: CGFloat(scaleFactor)))
         })
+    }
+    
+    @objc func sliderReleased(_ sender: UISlider) {
+        sender.value = 1
+        sliderValueChanged(sender)
     }
 }
 
